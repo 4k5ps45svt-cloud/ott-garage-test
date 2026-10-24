@@ -1,0 +1,658 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111b"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="OTM Garage"><link rel="apple-touch-icon" href="otm-icon-180.png"><link rel="manifest" href="manifest.webmanifest"><title>OTM Garage — Officina Manager</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:#183044;font:16px -apple-system,BlinkMacSystemFont,Arial,sans-serif}header{background:#12334b;color:white;padding:22px 16px}header h1{margin:0;font-size:23px}header small{opacity:.8}.wrap{max-width:640px;margin:auto;padding:16px 14px 95px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid #dce6e9;background:white;border-radius:18px;min-height:120px;padding:18px 6px;font-size:17px;font-weight:700}.tile b{display:block;font-size:31px;margin-bottom:9px}button{font:inherit;cursor:pointer}.primary{background:#087d81;color:white;border:0;border-radius:12px;padding:14px 18px;width:100%;font-weight:700}.secondary{border:1px solid #c8d4d9;border-radius:10px;background:white;padding:11px}.danger{color:#a82929}.card,.item{background:white;border:1px solid #dce5e8;border-radius:14px;padding:15px;margin:11px 0}.item{display:block;text-align:left;width:100%}.item strong{display:block;margin-bottom:5px}h2{font-size:20px;margin:8px 0 15px}section{display:none}section.active{display:block}.field{margin-bottom:13px}label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #c9d5da;border-radius:10px;padding:12px;background:white;color:#183044;font:16px -apple-system,Arial,sans-serif}textarea{min-height:70px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.muted{color:#637885;font-size:13px}.total{font-size:24px;color:#087d81;font-weight:800}.actions{display:flex;gap:9px;margin-top:12px}.actions button{flex:1}.part{padding:12px;border:1px solid #dbe5e9;border-radius:11px;margin:10px 0}.hint{background:#e6f2f1;padding:13px;border-radius:11px;font-size:13px;line-height:1.5}.bar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:white;border-top:1px solid #dce5e8;padding:9px 4px calc(9px + env(safe-area-inset-bottom))}.bar button{background:none;border:0;font-size:12px;color:#34556a;padding:5px}.hide{display:none!important}
+
+/* Layout responsivo affinato per iPhone 12 Pro Max e altri schermi */
+html{width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-bottom:105px}
+body{width:100%;min-width:0;overflow-x:hidden;line-height:1.4}
+header{padding:calc(17px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 17px max(16px,env(safe-area-inset-left,0px))}
+.wrap{width:100%;max-width:640px;padding:16px max(14px,env(safe-area-inset-right,0px)) calc(112px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.grid,.two{min-width:0}.grid>*,.two>*,.field,.card,.part{min-width:0}
+input,select,textarea{min-width:0;max-width:100%;font-size:16px;min-height:46px}
+textarea{resize:vertical}
+button{touch-action:manipulation;min-height:44px}
+.actions{flex-wrap:wrap}.actions button{flex:1 1 125px;min-width:0;overflow-wrap:anywhere}
+.row{min-width:0}.row>*{min-width:0;overflow-wrap:anywhere}
+.total{font-size:clamp(19px,5vw,24px);text-align:right}
+.bar{z-index:20;padding:8px max(6px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));gap:2px}
+.bar button{flex:1;min-width:0;font-size:12px;line-height:1.25;padding:6px 1px}
+.tile{min-width:0;overflow-wrap:anywhere}
+@media(max-width:380px){.two{grid-template-columns:1fr}.grid{gap:9px}.tile{font-size:15px;min-height:105px}.card{padding:12px}}
+@media(min-width:390px) and (max-width:480px){.wrap{padding-left:17px;padding-right:17px}.two{gap:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.tire-options{display:flex;flex-wrap:wrap;gap:10px}.tire-options label{display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px solid #cad5df;border-radius:10px;font-weight:500}.tire-options input{width:18px;height:18px;accent-color:#1565a8}#j_tireRate{display:none}</style><style>
+#lockScreen{position:fixed;inset:0;background:#f3f6f8;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}
+#lockScreen.hidden{display:none}
+#lockBox{background:white;border-radius:18px;padding:24px;width:100%;max-width:420px;box-shadow:0 8px 35px #0002}
+#lockBox h2{margin-top:0}#lockBox p{color:#526879;font-size:14px;line-height:1.5}
+#lockBox input{width:100%;font-size:18px;padding:14px;margin:8px 0 14px;border:1px solid #bac9d0;border-radius:10px}
+#lockBox button{width:100%;background:#087e83;color:white;border:0;padding:15px;border-radius:12px;font-weight:700}
+#lockError{color:#b22b2b;font-weight:700}
+</style>
+<style id="sport-dark-theme">
+:root{color-scheme:dark;--bg:#0b111b;--panel:#151f2d;--panel2:#1b2938;--line:#304356;--text:#eff5fc;--muted:#a6b8ca;--accent:#18c4c0;--accent2:#0fa6a6}
+html,body{background:var(--bg)!important;color:var(--text)!important}
+header{background:linear-gradient(120deg,#111e2d,#102e38)!important;border-bottom:2px solid var(--accent);box-shadow:0 8px 28px #0005}
+header h1{letter-spacing:.3px}
+section h2{color:#f5f9ff;letter-spacing:.2px}
+.card,.item,.tile,.part,#lockBox{background:var(--panel)!important;color:var(--text)!important;border:1px solid var(--line)!important;box-shadow:0 5px 20px #0002}
+.card,.item,.part{border-radius:16px!important}
+.tile{border-radius:20px!important;transition:transform .15s,border-color .15s}
+.tile:active,.item:active{transform:scale(.985);border-color:var(--accent)!important}
+.tile b{color:var(--accent)}
+input,select,textarea{background:#101a27!important;color:var(--text)!important;border:1px solid #3a5063!important;border-radius:11px!important}
+input::placeholder,textarea::placeholder{color:#8c9eaf!important}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent)!important;outline-offset:1px;border-color:var(--accent)!important}
+label{color:#c6d7e6!important}
+.primary,#lockBox button{background:linear-gradient(125deg,#0f969a,#12b7b2)!important;color:#fff!important;border:0!important;box-shadow:0 4px 14px #009e9b35}
+.secondary{background:var(--panel2)!important;color:#e9f5ff!important;border:1px solid #456075!important}
+.secondary.danger,.danger{color:#ff9c9c!important}
+.muted,small.muted,#lockBox p{color:var(--muted)!important}
+.hint{background:#123039!important;color:#d8f8f6!important;border:1px solid #23646a!important}
+.total{color:#35e1d4!important}
+.bar{background:#101c2a!important;border-top:1px solid #365063!important;box-shadow:0 -5px 24px #0006}
+.bar button{color:#d6e6f5!important}
+hr{border:0;border-top:1px solid var(--line)}
+#lockScreen{background:var(--bg)!important}
+#lockError{color:#ff9c9c!important}
+.tire-options label{background:#152435!important;border-color:#40576a!important;color:#e5f0f9!important}
+.tire-options input{accent-color:var(--accent)!important}
+a{color:#53e0dd}
+@media(prefers-reduced-motion:reduce){.tile{transition:none}}
+</style>
+<style id="dashboard-pro">
+#home{padding-top:5px}.dash-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:2px 0 22px}.dash-head h2{font-size:29px;letter-spacing:-.8px;margin:5px 0 3px;font-weight:800}.dash-eyebrow{color:#26d4cb;font-size:10px;font-weight:900;letter-spacing:2.2px}.dash-head p{margin:0}.dash-logo{width:53px;height:53px;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#174853,#122335);border:1px solid #328b8e;border-radius:15px;color:#e6fffe;font-weight:900;letter-spacing:-2px;font-size:21px;box-shadow:0 5px 22px #0005}.dash-logo span{color:#24d5cb;font-size:11px;margin-left:2px}.dash-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:25px}.dash-stat{min-width:0;display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:linear-gradient(160deg,#1c2b3c,#111c2a);border:1px solid #30485b;border-radius:17px;padding:13px 11px;color:#f0f7ff;box-shadow:0 8px 22px #0003}.dash-stat-label{font-size:9px;color:#9fb9ca;letter-spacing:.65px;font-weight:800}.dash-stat strong{font-size:33px;line-height:1.25;color:#2ee1d4;font-variant-numeric:tabular-nums}.dash-stat small{font-size:11px;color:#b8c9d9}.dash-section-title{display:flex;align-items:center;justify-content:space-between;margin:21px 0 11px;gap:8px}.dash-section-title h3{font-size:17px;margin:0;color:#f3f9ff}.dash-text-link{background:none;border:0;color:#40dcd5;font-size:12px;font-weight:700;padding:5px}.dash-actions{display:grid;grid-template-columns:1fr;gap:10px}.dash-action{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:14px;background:#172535;border:1px solid #355166;border-radius:15px;color:#eff8ff;font-weight:800;min-height:74px}.dash-action-primary{background:linear-gradient(115deg,#087d82,#0a5e6d);border-color:#18b6b6}.dash-action-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;background:#ffffff18;border:1px solid #ffffff2c;border-radius:12px;font-size:24px;font-weight:400}.dash-action span:nth-child(2){flex:1}.dash-action small{display:block;font-size:11px;font-weight:400;color:#c6d8e4;margin-top:3px}.dash-arrow{font-size:26px;font-weight:400;color:#b5e8e5}.dash-agenda{display:flex;flex-direction:column;gap:9px}.dash-appointment{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px;background:#162333;border:1px solid #32475a;border-radius:14px;color:#eaf5ff}.dash-time{font-size:17px;font-weight:800;color:#38d8d0;min-width:54px;font-variant-numeric:tabular-nums}.dash-appt-main{flex:1;min-width:0}.dash-appt-main strong{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dash-appt-main small{display:block;color:#a9bdcf;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}.dash-status{font-size:10px;font-weight:800;padding:5px 7px;border-radius:8px;background:#26384c;color:#bcd6ec;white-space:nowrap}.dash-status.progress{background:#124945;color:#64ead7}.dash-status.done{background:#25412d;color:#a1e3a9}.dash-status.cancelled{background:#45282e;color:#ffacb2}.dash-empty{padding:20px 16px;border:1px dashed #38546a;border-radius:14px;color:#a8c0d2;text-align:center;font-size:13px}.dash-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:23px}.dash-shortcuts button{display:flex;align-items:center;gap:7px;min-width:0;padding:13px 10px;border-radius:13px;background:#172535;color:#eaf4fc;border:1px solid #344a60;font-size:12px;font-weight:700}.dash-shortcuts button span{color:#35d8d0;font-size:19px}.dash-shortcuts button b{margin-left:auto;font-size:18px;color:#76a8b8}.dash-backup{color:#8298aa;font-size:11px;line-height:1.5;margin-top:22px;text-align:center}@media(max-width:370px){.dash-stat{padding:10px 7px}.dash-stat-label{font-size:8px}.dash-stat strong{font-size:27px}.dash-stat small{font-size:10px}.dash-status{font-size:9px}.dash-shortcuts button{font-size:11px}}
+</style><style id="back-navigation-style">
+#backNav{display:none;align-items:center;gap:8px;width:max-content;max-width:100%;margin:0 0 14px;padding:10px 16px;border-radius:12px;background:#182c3b;color:#e7f8fb;border:1px solid #385568;font-weight:700;font-size:14px;box-shadow:0 3px 12px #0003}
+#backNav:active{background:#244557}#backNav .back-arrow{font-size:21px;line-height:1;color:#35e1d4}
+.otm-header{display:flex;align-items:center;gap:12px}.otm-header img{width:58px;height:58px;object-fit:contain;border-radius:12px}.otm-header h1{font-size:22px;line-height:1.2}.otm-dash-logo{width:75px;height:75px;object-fit:contain;border-radius:15px;flex:none;border:1px solid #328b8e;background:#0b111b}@media(max-width:380px){.otm-dash-logo{width:60px;height:60px}}
+</style><style>.otm-photo{display:inline-flex;flex-direction:column;width:46%;margin:5px;gap:5px}.otm-photo img{width:100%;height:110px;object-fit:cover;border-radius:10px}</style>
+<style id="otm-sportivo-v2">
+:root{--bg:#080e18;--panel:#111d2c;--panel2:#192b3e;--line:#2d465d;--accent:#19d9d1}
+body{background:radial-gradient(ellipse at top,#142b3c 0,#080e18 440px)!important}
+header{background:linear-gradient(115deg,#07121f,#103e4c)!important;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:12px}
+.otm-header img{width:66px;height:66px;object-fit:contain;border:1px solid #367c88;background:#07131f}
+.otm-header h1{font-size:24px;letter-spacing:1px;font-weight:900}
+.otm-header small{color:#9bc6d0;letter-spacing:.25px}
+.wrap{max-width:780px}
+.dash-head{padding:18px 17px;background:linear-gradient(125deg,#183c50,#101c2c 75%);border:1px solid #33637a;border-radius:22px;margin-bottom:18px;box-shadow:0 12px 35px #0005}
+.dash-head h2{font-size:clamp(25px,6vw,35px)}
+.dash-eyebrow{color:#41e4d9}
+.otm-dash-logo{width:88px;height:88px;background:#08141e;border:1px solid #329ca4;box-shadow:0 0 25px #1bd7cb22}
+.dash-stats{gap:10px}
+.dash-stat{background:linear-gradient(145deg,#1b3548,#101d2d);border:1px solid #3a6075;border-radius:19px;min-height:111px}
+.dash-stat strong{font-size:clamp(28px,7vw,38px)}
+.dash-section-title{margin-top:26px}
+.dash-section-title h3{font-size:19px}
+.dash-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dash-action{min-width:0;align-items:flex-start;flex-direction:column;gap:9px;min-height:142px;border-radius:19px;background:linear-gradient(145deg,#193246,#122234);padding:16px}
+.dash-action-primary{background:linear-gradient(140deg,#087d87,#074956)}
+.dash-action-icon{width:46px;height:46px;font-size:27px}
+.dash-action span:nth-child(2){font-size:15px}
+.dash-action small{font-size:11px}
+.dash-arrow{display:none}
+.dash-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.dash-shortcuts button{min-height:66px;background:linear-gradient(145deg,#1a3043,#111e2e);border-color:#39586d;border-radius:16px;font-size:13px}
+.dash-shortcuts button span{font-size:23px}
+.primary{border-radius:14px!important;font-weight:800;letter-spacing:.2px}
+.card,.item{box-shadow:0 8px 22px #0002!important}
+.bar button{font-weight:650}
+#quotes #quoteEditor{border:1px solid #367d83!important}
+@media(max-width:365px){.dash-actions{grid-template-columns:1fr}.dash-action{min-height:94px;flex-direction:row;align-items:center}.dash-shortcuts button{font-size:11px}}
+</style>
+</head><body><div id="lockScreen"><div id="lockBox"><h2>🔒 Officina Manager</h2>
+<p id="lockMessage">Inserisci una password per proteggere l'archivio. Usane una che puoi ricordare: non è recuperabile.</p>
+<form id="lockForm"><label for="lockPassword">Password (almeno 8 caratteri)</label><input id="lockPassword" type="password" minlength="8" required autocomplete="off">
+<button id="lockButton" type="submit">Sblocca</button></form>
+<p id="lockError" role="alert"></p>
+<p>La password non viene inviata a un server. I dati sono cifrati su questo dispositivo.</p></div></div><header><div class="otm-header"><img src="otm-logo.png" alt="Logo OTM Garage"><div><h1>OTM Garage</h1><small>La tua officina, sempre con te</small></div></div></header><main class="wrap"><button type="button" id="backNav" onclick="goBack()" aria-label="Torna alla schermata precedente"><span class="back-arrow" aria-hidden="true">←</span> Indietro</button>
+<section id="home" class="active">
+<div class="dash-head"><div><div class="dash-eyebrow">PANORAMICA OFFICINA</div><h2>Il tuo cruscotto</h2><p id="dashDate" class="muted"></p></div><img class="otm-dash-logo" src="otm-logo.png" alt="OTM Garage"></div>
+<div class="dash-stats"><button type="button" class="dash-stat" onclick="go('agenda')"><span class="dash-stat-label">OGGI</span><strong id="dashToday">0</strong><small>Appuntamenti</small></button><button type="button" class="dash-stat" onclick="go('jobs')"><span class="dash-stat-label">IN OFFICINA</span><strong id="dashProgress">0</strong><small>Lavori in corso</small></button><button type="button" class="dash-stat" onclick="go('jobs')"><span class="dash-stat-label">COMPLETATI</span><strong id="dashDone">0</strong><small>Lavori</small></button></div>
+<div class="dash-section-title"><h3>Azioni rapide</h3></div><div class="dash-actions"><button type="button" class="dash-action dash-action-primary" onclick="editAppt()"><span class="dash-action-icon">＋</span><span>Nuovo appuntamento<small>Organizza un intervento</small></span><span class="dash-arrow">›</span></button><button type="button" class="dash-action" onclick="editJob()"><span class="dash-action-icon">⚙</span><span>Nuovo lavoro<small>Apri una scheda lavoro</small></span><span class="dash-arrow">›</span></button></div>
+<div class="dash-section-title"><h3>Agenda di oggi</h3><button type="button" class="dash-text-link" onclick="go('agenda')">Vedi tutti ›</button></div><div id="dashAgenda" class="dash-agenda"></div>
+<div class="dash-shortcuts"><button type="button" onclick="go('quotes')"><span>▤</span>Preventivi <b>›</b></button><button type="button" onclick="go('reminders')"><span>◷</span>Promemoria <b>›</b></button><button type="button" onclick="go('stats')"><span>▥</span>Statistiche <b>›</b></button><button type="button" onclick="go('clients')"><span>♧</span>Clienti e auto <b>›</b></button><button type="button" onclick="go('jobs')"><span>▤</span>Storico lavori <b>›</b></button></div>
+<p class="dash-backup">🔒 I dati sono conservati sul dispositivo. Ricorda di effettuare periodicamente un backup.</p>
+</section>
+<section id="agenda"><h2>Appuntamenti</h2><button class="primary" onclick="editAppt()">+ Nuovo appuntamento</button><div id="appts"></div></section>
+<section id="apptEdit"><h2>Appuntamento</h2><form id="apptForm"><input id="a_id" type="hidden"><div class="two"><div class="field"><label>Data</label><input id="a_date" type="date" required></div><div class="field"><label>Ora</label><input id="a_time" type="time" required></div></div><div class="field"><label>Cliente</label><input id="a_client" required autocomplete="off" oninput="searchApptVehicles()"></div><div class="field"><label>Targa</label><input id="a_plate" autocapitalize="characters" autocomplete="off" oninput="searchApptVehicles()"></div><div class="field"><label>Auto</label><input id="a_vehicle" oninput="clearApptSelection()"></div><div class="actions"><button type="button" class="secondary" onclick="addAnotherApptCar()">➕ Aggiungi un’altra auto al cliente</button></div><p id="a_customerHint" class="muted" aria-live="polite"></p><input id="a_vehicleId" type="hidden"><div class="field"><label>Seleziona il veicolo dall’archivio</label><div id="a_matches" class="card" style="display:none"></div><small class="muted" id="a_matchHelp">Cerca per nome o targa. Se ci sono più veicoli, scegli quello giusto.</small></div><p class="hint" id="a_saveClientHelp">Quando premi «Salva appuntamento», se il cliente o l’auto non sono ancora registrati, ti chiederò se vuoi aggiungerli all’archivio. Se sono già registrati, non creerò doppioni.</p><div class="field"><label>Intervento previsto</label><textarea id="a_desc"></textarea></div><div class="field"><label>Stato</label><select id="a_status"><option>Prenotato</option><option>In lavorazione</option><option>Completato</option><option>Annullato</option></select></div><button class="primary">Salva appuntamento</button></form><div class="card" id="a_jobPanel" style="display:none"><button type="button" class="primary" id="a_createJob" onclick="createJobFromAppt()">🔧 Crea lavoro da appuntamento</button><div id="a_linkedJobs" class="muted"></div><small class="muted">Lo stato passa a “In lavorazione” soltanto quando salvi il lavoro.</small></div><div class="actions"><button class="secondary" onclick="go('agenda')">Indietro</button><button id="a_delete" class="secondary danger" onclick="delItem('appointments','a_id','agenda')">Elimina</button></div></section>
+<section id="jobs"><h2>Storico lavori</h2><button class="primary" onclick="editJob()">+ Nuovo lavoro</button><div class="field" style="margin-top:14px"><label>Cerca targa, cliente o lavoro</label><input id="search" placeholder="Cerca..." oninput="renderJobs()"></div><div id="jobItems"></div></section>
+<section id="jobEdit"><h2>Scheda lavoro</h2>
+<div class="card"><strong>⚡ Compilazione rapida</strong><p class="muted">Scrivi una targa già registrata per recuperare cliente e veicolo. Puoi anche duplicare un vecchio lavoro.</p>
+<div class="actions"><button type="button" class="secondary" onclick="fillFromPlate()">🔎 Cerca targa</button><button type="button" class="secondary" onclick="duplicateJob()">📋 Duplica lavoro</button></div>
+<div id="quickMsg" class="muted" aria-live="polite"></div><div id="j_apptInfo" class="hint" style="display:none"></div></div><form id="jobForm"><input id="j_id" type="hidden"><input id="j_appointmentId" type="hidden"><div class="field"><label>Data</label><input id="j_date" type="date" required></div><div class="field"><label>Cliente</label><input id="j_client" required autocomplete="off" oninput="searchJobVehicles()"><datalist id="knownClients"></datalist></div><div class="field"><label>Seleziona auto del cliente</label><div id="j_matches" class="card" style="display:none"></div><small id="j_matchHelp" class="muted">Scrivi il nome del cliente e scegli il veicolo dall’elenco.</small></div><div class="field"><label>Targa</label><input id="j_plate" required autocapitalize="characters" onblur="fillFromPlate()"></div><div class="field"><label>Veicolo</label><input id="j_vehicle" list="knownVehicles"><datalist id="knownVehicles"></datalist></div><div class="field"><label>Numero di telaio (VIN)</label><input id="j_vin" maxlength="17" autocapitalize="characters" placeholder="17 caratteri"></div><div class="two"><div class="field"><label>Codice motore</label><input id="j_engine" autocapitalize="characters"></div><div class="field"><label>Potenza (kW)</label><input id="j_kw" type="number" min="0" step="0.01" inputmode="decimal"></div></div><div class="field"><label>Numero identificativo (altro)</label><input id="j_ident" placeholder="Es. numero documento o identificativo interno"></div><div class="field"><label>Km</label><input id="j_km" type="number" min="0"></div><div class="field"><label>Intervento eseguito</label><textarea id="j_desc" required></textarea></div><div class="field"><label>Stato</label><select id="j_status"><option>Da fare</option><option>In lavorazione</option><option>Completato</option><option>Consegnato</option></select></div><div class="card"><div class="row"><strong>Ricambi</strong><button class="secondary" type="button" onclick="addPart()">+ Aggiungi</button></div><div class="field"><label>Ricambi frequenti — tocca per aggiungere</label><div class="actions" style="display:flex;flex-wrap:wrap;gap:7px"><button type="button" class="secondary" onclick="quickPart('Olio motore')">+ Olio motore</button><button type="button" class="secondary" onclick="quickPart('Filtro olio')">+ Filtro olio</button><button type="button" class="secondary" onclick="quickPart('Filtro aria')">+ Filtro aria</button><button type="button" class="secondary" onclick="quickPart('Pastiglie freni')">+ Pastiglie freni</button></div><small class="muted">Il prezzo è modificabile. Se hai già usato il ricambio, viene proposto l'ultimo prezzo salvato.</small></div><div id="parts"></div><datalist id="knownParts"></datalist></div><div class="card"><input id="j_tireRate" type="hidden" value="0"><strong>Ruote e pneumatici</strong><div class="field"><label>Servizio</label><div class="tire-options"><label><input type="radio" name="tireService" value="none" checked onchange="updateTireServiceRate()"> Nessuno</label><label><input type="radio" name="tireService" value="wheels" onchange="updateTireServiceRate()"> Sostituzione ruote</label><label><input type="radio" name="tireService" value="tires" onchange="updateTireServiceRate()"> Sostituzione pneumatici</label></div></div><div class="field"><label>Dimensione pneumatici</label><input id="j_tireSize" placeholder="225/45 R17"></div><div class="field"><label>Tipo</label><div class="tire-options"><label><input type="radio" name="tireSeason" value="" checked> — </label><label><input type="radio" name="tireSeason" value="W"> W</label><label><input type="radio" name="tireSeason" value="S"> S</label></div></div><div class="two"><div class="field"><label>VR (mm)</label><input id="j_tireVR" type="number" min="0" step="0.1" inputmode="decimal"></div><div class="field"><label>VL (mm)</label><input id="j_tireVL" type="number" min="0" step="0.1" inputmode="decimal"></div><div class="field"><label>HR (mm)</label><input id="j_tireHR" type="number" min="0" step="0.1" inputmode="decimal"></div><div class="field"><label>HL (mm)</label><input id="j_tireHL" type="number" min="0" step="0.1" inputmode="decimal"></div></div><div class="row"><span>Servizio ruote/pneumatici</span><strong id="tireCost">0,00 CHF</strong></div></div><div class="two"><div class="field"><label>Ore manodopera</label><input id="j_hours" type="number" min="0" step="0.25" value="0" oninput="calc()"></div><div class="field"><label>Tariffa oraria (CHF)</label><input id="j_rate" type="number" min="0" step="0.01" value="0" oninput="calc()"></div></div><div class="card"><div class="row"><span>Materiali</span><strong id="mats">0,00 CHF</strong></div><div class="row"><span>Manodopera</span><strong id="labor">0,00 CHF</strong></div><hr><div class="row"><strong>TOTALE</strong><span class="total" id="grand">0,00 CHF</span></div></div><div class="field"><label>Note</label><textarea id="j_notes"></textarea></div>
+<div class="card"><strong>💳 Pagamenti</strong><div class="field"><label>Stato pagamento</label><select id="j_payment"><option>Da pagare</option><option>Acconto</option><option>Pagato</option></select></div><div class="field"><label>Acconto ricevuto (CHF)</label><input id="j_deposit" type="number" min="0" step="0.01" value="0"></div></div>
+<div class="card"><strong>🔔 Prossima manutenzione</strong><div class="two"><div class="field"><label>Data promemoria</label><input id="j_nextService" type="date"></div><div class="field"><label>Km previsti</label><input id="j_nextKm" type="number" min="0"></div></div></div>
+<div class="card"><strong>📷 Foto intervento</strong><p class="muted">Massimo 2 foto ridotte per non riempire la memoria dell’iPhone.</p><input id="j_photoInput" type="file" accept="image/*" onchange="addJobPhoto(this)"><div id="j_photos"></div></div><button class="primary">Salva lavoro</button></form><div class="actions"><button class="secondary" onclick="go('jobs')">Indietro</button><button id="j_delete" class="secondary danger" onclick="delItem('jobs','j_id','jobs')">Elimina</button></div></section>
+<section id="clientHistory"><h2 id="clientHistoryTitle">Storico cliente</h2><p class="muted" id="clientHistoryInfo"></p><div class="card"><strong>Contatta cliente</strong><div class="actions"><button class="secondary" onclick="contactClient('wa')">WhatsApp</button><button class="secondary" onclick="contactClient('mail')">Email</button></div><div class="field"><label>Messaggio</label><select id="contactTemplate"><option value="ready">Auto pronta</option><option value="appointment">Conferma appuntamento</option><option value="quote">Preventivo pronto</option><option value="service">Promemoria manutenzione</option></select></div><div class="field"><label>Email cliente (facoltativa)</label><input id="contactEmail" type="email" placeholder="cliente@esempio.ch"></div></div><div id="clientHistoryItems"></div></section>
+<section id="clients"><h2>Clienti e auto</h2><button class="primary" onclick="editClient()">+ Nuovo cliente</button><button type="button" class="secondary" style="margin:10px 0;width:100%" onclick="recoverClientsFromJobs()">↻ Recupera clienti dallo storico</button><div class="field" style="margin-top:14px"><label for="clientSearch">🔎 Cerca cliente, targa o auto</label><input id="clientSearch" type="search" placeholder="Nome, targa, modello, telefono..." oninput="renderClients()" autocomplete="off"></div><div id="clientItems"></div></section>
+<section id="clientEdit"><h2>Cliente e auto</h2><p class="hint" id="c_context" style="display:none"></p><form id="clientForm"><input id="c_id" type="hidden"><div class="field"><label>Cliente</label><input id="c_name" required></div><div class="field"><label>Telefono</label><input id="c_phone" type="tel"></div><div class="field"><label>Targa</label><input id="c_plate"></div><div class="field"><label>Marca e modello</label><input id="c_vehicle"></div><div class="field"><label>Numero di telaio (VIN)</label><input id="c_vin" maxlength="17" autocapitalize="characters" placeholder="17 caratteri"></div><div class="two"><div class="field"><label>Codice motore</label><input id="c_engine" autocapitalize="characters"></div><div class="field"><label>Potenza (kW)</label><input id="c_kw" type="number" min="0" step="0.01" inputmode="decimal"></div></div><div class="field"><label>Numero identificativo (altro)</label><input id="c_ident" placeholder="Es. numero documento o identificativo interno"></div><div class="field"><label>Note</label><textarea id="c_notes"></textarea></div><button class="primary" id="c_saveButton">Salva cliente e auto</button></form><div class="actions"><button class="secondary" onclick="backFromClient()">Indietro</button><button id="c_delete" class="secondary danger" onclick="delItem('clients','c_id','clients')">Elimina</button></div></section>
+<section id="quotes"><h2>Preventivi</h2><button class="primary" onclick="newQuote()">+ Nuovo preventivo</button><div id="quoteItems"></div><div id="quoteEditor" class="card hide"><h2>Preventivo</h2><input type="hidden" id="q_id"><div class="field"><label>Cliente</label><input id="q_client" list="knownClients"></div><div class="field"><label>Targa</label><input id="q_plate"></div><div class="field"><label>Descrizione intervento</label><textarea id="q_desc"></textarea></div><div class="two"><div class="field"><label>Ricambi CHF</label><input id="q_parts" type="number" min="0" step="0.01" value="0"></div><div class="field"><label>Ore manodopera</label><input id="q_hours" type="number" min="0" step="0.25" value="0"></div></div><div class="field"><label>Tariffa oraria CHF</label><input id="q_rate" type="number" min="0" step="0.01" value="110"></div><p class="muted">IVA iniziale 0%, modificabile nelle impostazioni.</p><div class="actions"><button class="primary" onclick="saveQuote()">Salva preventivo</button><button class="secondary" onclick="printQuote()">PDF / Stampa</button></div></div></section>
+<section id="reminders"><h2>Promemoria manutenzioni</h2><p class="hint">Promemoria visibili quando apri l'app. Non sono notifiche automatiche a telefono bloccato.</p><div id="reminderItems"></div></section>
+<section id="stats"><h2>Statistiche</h2><div class="field"><label>Mese</label><input id="statsMonth" type="month" onchange="renderStats()"></div><div id="statsItems"></div></section>
+<section id="settings"><h2>Impostazioni e backup</h2><div class="card"><strong>IVA preventivi</strong><p class="muted">Predefinita 0%. Verifica l’aliquota applicabile alla tua attività.</p><select id="cfg_vat"><option value="0">0%</option><option value="8.1">8,1%</option></select><button class="primary" style="margin-top:10px" onclick="saveVat()">Salva IVA</button></div><div class="card"><strong>Tariffe predefinite (CHF)</strong><p class="muted">Le modifiche valgono per le nuove schede. I lavori già salvati conservano i propri importi.</p><div class="field"><label>Manodopera / ora</label><input id="cfg_hour" type="number" min="0" step="0.01" inputmode="decimal"></div><div class="field"><label>Sostituzione ruote</label><input id="cfg_wheels" type="number" min="0" step="0.01" inputmode="decimal"></div><div class="field"><label>Sostituzione pneumatici</label><input id="cfg_tires" type="number" min="0" step="0.01" inputmode="decimal"></div><button type="button" class="primary" onclick="saveRates()">Salva tariffe</button></div><div class="card"><strong>🔓 Accesso automatico</strong><p class="muted">Apri OTM Garage senza digitare la password su questo dispositivo. L'archivio resta cifrato, ma chiunque possa usare questo browser potrà aprirlo. Attiva separatamente su Mac e iPhone. Usa questa opzione soltanto su dispositivi personali protetti da codice.</p><p id="autoUnlockStatus" class="hint">Verifica stato…</p><button type="button" class="primary" id="autoUnlockEnable" onclick="enableAutoUnlock()">Attiva accesso automatico</button><button type="button" class="secondary" id="autoUnlockDisable" style="margin-top:10px;width:100%" onclick="disableAutoUnlock()">Disattiva accesso automatico</button></div><div class="card"><strong>🔐 Cambia password</strong><p class="muted">La modifica conserva l'archivio. Prima esporta un backup e custodiscilo in un luogo sicuro: il backup non è cifrato.</p><form id="changePasswordForm"><div class="field"><label for="oldPassword">Password attuale</label><input id="oldPassword" type="password" required autocomplete="current-password"></div><div class="field"><label for="newPassword">Nuova password (almeno 8 caratteri)</label><input id="newPassword" type="password" minlength="8" required autocomplete="new-password"></div><div class="field"><label for="confirmPassword">Conferma nuova password</label><input id="confirmPassword" type="password" minlength="8" required autocomplete="new-password"></div><button class="primary" id="changePasswordButton" type="submit">Cambia password</button><p class="muted" id="changePasswordMessage" role="status"></p></form></div><div class="card"><strong>Esporta archivio</strong><p class="muted">Il backup contiene dati in chiaro: conservalo in una posizione protetta.</p><button class="primary" onclick="exportBackup()">Scarica backup</button></div><div class="card"><strong>Ripristina backup</strong><p class="muted">Sostituisce i dati attuali.</p><input id="backupFile" type="file" accept=".json,application/json"><button class="secondary" style="margin-top:10px;width:100%" onclick="importBackup()">Ripristina</button></div><p class="hint">I dati vengono salvati localmente nel browser su questo dispositivo, non su GitHub. La cancellazione dei dati di Safari può eliminarli. L’archivio è protetto dalla password. Esegui backup regolari: i file esportati non sono cifrati.</p></section>
+</main><nav class="bar"><button onclick="go('home')">🏠<br>Home</button><button onclick="go('agenda')">📅<br>Agenda</button><button onclick="editJob()">➕<br>Lavoro</button><button onclick="go('jobs')">📋<br>Storico</button><button onclick="go('settings')">⚙️<br>Backup</button></nav><script>
+'use strict';const $=id=>document.getElementById(id),v=id=>$(id).value,s=(id,x)=>$(id).value=x??'',key='officina_manager_v1';let db={appointments:[],jobs:[],clients:[]};let cryptoKey=null, unlocked=false;
+const secureKey=key+'_encrypted';
+
+// Accesso automatico: salva la CryptoKey non esportabile solo nell'IndexedDB di questo sito/dispositivo.
+// Non memorizza la password. La chiave è utilizzabile da chi ha accesso a questo profilo browser.
+const AUTO_DB='otm_auto_unlock_v1', AUTO_STORE='keys';
+function autoStore(){
+ return new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window)){reject(Error('IndexedDB non disponibile'));return}
+  const req=indexedDB.open(AUTO_DB,1);
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(AUTO_STORE))req.result.createObjectStore(AUTO_STORE)};
+  req.onerror=()=>reject(req.error||Error('Apertura non riuscita'));
+  req.onsuccess=()=>resolve(req.result);
+ });
+}
+async function autoGet(){
+ const database=await autoStore();
+ return new Promise((resolve,reject)=>{
+  const tx=database.transaction(AUTO_STORE,'readonly'),req=tx.objectStore(AUTO_STORE).get('archive');
+  req.onsuccess=()=>resolve(req.result||null);
+  req.onerror=()=>reject(req.error);
+  tx.oncomplete=()=>database.close();
+  tx.onerror=()=>{database.close();reject(tx.error)};
+ });
+}
+async function autoPut(value){
+ const database=await autoStore();
+ return new Promise((resolve,reject)=>{
+  const tx=database.transaction(AUTO_STORE,'readwrite');
+  tx.objectStore(AUTO_STORE).put(value,'archive');
+  tx.oncomplete=()=>{database.close();resolve()};
+  tx.onerror=()=>{database.close();reject(tx.error)};
+ });
+}
+async function autoClear(){
+ const database=await autoStore();
+ return new Promise((resolve,reject)=>{
+  const tx=database.transaction(AUTO_STORE,'readwrite');
+  tx.objectStore(AUTO_STORE).delete('archive');
+  tx.oncomplete=()=>{database.close();resolve()};
+  tx.onerror=()=>{database.close();reject(tx.error)};
+ });
+}
+async function showAutoStatus(){
+ const label=$('autoUnlockStatus'),enable=$('autoUnlockEnable'),disable=$('autoUnlockDisable');
+ if(!label)return;
+ try{
+  const stored=await autoGet(),active=!!(stored&&stored.key);
+  label.textContent=active?'Attivo su questo dispositivo.':'Disattivato su questo dispositivo.';
+  enable.disabled=active;disable.disabled=!active;
+ }catch(_){label.textContent='Non disponibile in questo browser o modalità privata.';enable.disabled=true;disable.disabled=true}
+}
+async function enableAutoUnlock(){
+ if(!unlocked||!cryptoKey)return alert('Sblocca prima l’archivio con la password.');
+ if(!confirm('Attivare l’accesso senza password su questo browser? Chi usa il dispositivo potrà leggere i dati dei clienti.'))return;
+ try{
+  const record=JSON.parse(localStorage.getItem(secureKey));
+  if(!record||!record.salt)throw Error('Archivio mancante');
+  await autoPut({key:cryptoKey,salt:record.salt});
+  const test=await autoGet();
+  if(!test||!test.key||test.salt!==record.salt)throw Error('Verifica fallita');
+  await decryptData(record,test.key);
+  await showAutoStatus();
+  alert('Accesso automatico attivato su questo dispositivo.');
+ }catch(err){try{await autoClear()}catch(_){}await showAutoStatus();alert('Non è stato possibile attivare l’accesso automatico in questo browser.')}
+}
+async function disableAutoUnlock(){
+ if(!confirm('Disattivare l’accesso automatico? Alla prossima apertura servirà la password.'))return;
+ try{await autoClear();await showAutoStatus();alert('Accesso automatico disattivato.')}catch(_){alert('Non è stato possibile disattivarlo. Riprova.')}
+}
+async function tryAutoUnlock(){
+ try{
+  const recordText=localStorage.getItem(secureKey);
+  if(!recordText)return;
+  const record=JSON.parse(recordText),stored=await autoGet();
+  if(!stored||!stored.key||stored.salt!==record.salt)return;
+  const restored=await decryptData(record,stored.key);
+  db=restored;cryptoKey=stored.key;unlocked=true;
+  $('lockScreen').classList.add('hidden');
+  renderDashboard();
+ }catch(_){/* Password manuale ancora disponibile; non cancellare i dati */ }
+}
+
+const bytes=a=>new Uint8Array(a);
+const b64=a=>btoa(String.fromCharCode(...bytes(a)));
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function derive(password,salt){let base=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encryptData(data,k){let iv=crypto.getRandomValues(new Uint8Array(12));let cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(data)));return {iv:b64(iv),data:b64(cipher)}}
+async function decryptData(record,k){let plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(record.iv)},k,unb64(record.data));let x=JSON.parse(new TextDecoder().decode(plain));if(!['appointments','jobs','clients'].every(y=>Array.isArray(x[y])))throw Error('Archivio non valido');return x}
+async function unlock(password){
+ const saved=localStorage.getItem(secureKey);
+ if(saved){let record=JSON.parse(saved);let k=await derive(password,unb64(record.salt));db=await decryptData(record,k);cryptoKey=k}
+ else {
+   let legacy=localStorage.getItem(key),initial={appointments:[],jobs:[],clients:[]};
+   if(legacy){let x=JSON.parse(legacy);if(!['appointments','jobs','clients'].every(y=>Array.isArray(x[y])))throw Error('Archivio precedente non valido');initial=x}
+   let salt=crypto.getRandomValues(new Uint8Array(16)),k=await derive(password,salt),enc=await encryptData(initial,k);
+   localStorage.setItem(secureKey,JSON.stringify({salt:b64(salt),...enc}));
+   let verify=await decryptData(JSON.parse(localStorage.getItem(secureKey)),k);
+   db=verify;cryptoKey=k;
+   if(legacy)localStorage.removeItem(key);
+ }
+ unlocked=true;document.getElementById('lockScreen').classList.add('hidden');renderDashboard();
+ document.getElementById('lockPassword').value='';
+}
+document.getElementById('lockForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();let btn=document.getElementById('lockButton');btn.disabled=true;document.getElementById('lockError').textContent='';
+ try{await unlock(document.getElementById('lockPassword').value)}
+ catch(err){document.getElementById('lockError').textContent='Password errata oppure archivio non accessibile. Non cancellare i dati del sito.'}
+ finally{btn.disabled=false}
+});
+document.getElementById('lockMessage').textContent=localStorage.getItem(secureKey)?'Inserisci la password per aprire il tuo archivio.':'Crea una password di almeno 8 caratteri. I lavori già salvati saranno cifrati dopo il primo sblocco. Conserva prima un backup.';
+document.getElementById('lockButton').textContent=localStorage.getItem(secureKey)?'Sblocca archivio':'Crea password e apri';
+tryAutoUnlock();
+const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2),today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},e=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),eur=n=>(Number(n)||0).toLocaleString('it-IT',{style:'currency',currency:'CHF'});async function save(){try{
+ if(!unlocked||!cryptoKey)throw Error('Archivio bloccato');
+ let record=JSON.parse(localStorage.getItem(secureKey));
+ let enc=await encryptData(db,cryptoKey);
+ localStorage.setItem(secureKey,JSON.stringify({salt:record.salt,...enc}));
+ return true
+}catch(err){alert('Impossibile salvare: controlla spazio e impostazioni del browser.');return false}}document.getElementById('changePasswordForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ const oldPassword=v('oldPassword'),newPassword=v('newPassword'),confirmation=v('confirmPassword');
+ const msg=$('changePasswordMessage'),button=$('changePasswordButton');
+ msg.textContent='';
+ if(!unlocked||!cryptoKey){msg.textContent='Sblocca prima l’archivio.';return}
+ if(newPassword.length<8){msg.textContent='La nuova password deve contenere almeno 8 caratteri.';return}
+ if(newPassword!==confirmation){msg.textContent='Le nuove password non coincidono.';return}
+ if(oldPassword===newPassword){msg.textContent='Scegli una password diversa da quella attuale.';return}
+ if(!confirm('Hai già esportato un backup aggiornato? Confermi il cambio password?'))return;
+ button.disabled=true;
+ let oldRecord=null,updated=false;
+ try{
+   oldRecord=localStorage.getItem(secureKey);
+   if(!oldRecord)throw Error('Archivio non trovato');
+   const record=JSON.parse(oldRecord);
+   const oldKey=await derive(oldPassword,unb64(record.salt));
+   const archived=await decryptData(record,oldKey);
+   // Reencrypt the exact persisted archive; don't accidentally discard fields.
+   const newSalt=crypto.getRandomValues(new Uint8Array(16));
+   const newKey=await derive(newPassword,newSalt);
+   const enc=await encryptData(archived,newKey);
+   const newRecord=JSON.stringify({salt:b64(newSalt),...enc});
+   const verified=await decryptData(JSON.parse(newRecord),newKey);
+   if(JSON.stringify(verified)!==JSON.stringify(archived))throw Error('Verifica archivio fallita');
+   localStorage.setItem(secureKey,newRecord);updated=true;
+   // Confirm the actual stored bytes can be decrypted before changing active key.
+   await decryptData(JSON.parse(localStorage.getItem(secureKey)),newKey);
+   cryptoKey=newKey;
+   $('changePasswordForm').reset();
+   try{await autoClear()}catch(_){};await showAutoStatus();msg.textContent='Password modificata. Accesso automatico disattivato: riattivalo dalle impostazioni se lo desideri.';
+ }catch(err){
+   if(updated&&oldRecord!==null){try{localStorage.setItem(secureKey,oldRecord)}catch(_) {}}
+   msg.textContent='Cambio password non riuscito. Se la password attuale è corretta, controlla lo spazio disponibile. Non cancellare i dati.';
+ }finally{button.disabled=false}
+});
+const RATE_DEFAULTS={hour:110,wheels:40,tires:70};
+function getRates(){let x=db.rates||{};return Object.fromEntries(Object.entries(RATE_DEFAULTS).map(([k,n])=>[k,Number.isFinite(Number(x[k]))&&x[k]!==undefined&&x[k]!==null?Number(x[k]):n]))}
+function showRates(){const r=getRates();for(const k of ['hour','wheels','tires'])s('cfg_'+k,r[k])}
+async function saveRates(){let rates={};for(const k of ['hour','wheels','tires']){const input=$('cfg_'+k);if(input.value.trim()===''||!Number.isFinite(Number(input.value))||Number(input.value)<0)return alert('Inserisci una tariffa valida per '+k);rates[k]=Number(input.value)}db.rates=rates;if(await save())alert('Tariffe salvate. Saranno proposte nei nuovi lavori.')}
+function checkedValue(name){return document.querySelector('input[name="'+name+'"]:checked')?.value||''}
+function setCheckedValue(name,value){let option=[...document.querySelectorAll('input[name="'+name+'"]')].find(x=>x.value===value);(option||document.querySelector('input[name="'+name+'"]')).checked=true}
+function tireCharge(){let service=checkedValue('tireService');if(service==='none'||!service)return 0;let rate=v('j_tireRate');return Number(rate)||0}
+function updateTireServiceRate(){let service=checkedValue('tireService');s('j_tireRate',service==='wheels'?getRates().wheels:service==='tires'?getRates().tires:0);calc()}
+let navHistory=[];
+function goBack(){
+ const previous=navHistory.pop()||'home';
+ go(previous,true);
+}
+function go(page,fromBack=false){
+ const current=document.querySelector('main section.active')?.id||'home';
+ if(!document.getElementById(page))return;
+ if(!fromBack&&page!==current){
+  if(page==='home')navHistory=[];
+  else navHistory.push(current);
+ }
+ if(page==='home'){renderDashboard();otmBackupNotice();}
+ document.querySelectorAll('main section').forEach(x=>x.classList.toggle('active',x.id===page));
+ if(page==='quotes')renderQuotes();if(page==='reminders')renderReminders();if(page==='stats')renderStats();if(page==='agenda')renderAppts();if(page==='jobs')renderJobs();if(page==='clients')renderClients();if(page==='clientHistory')renderClientHistory();if(page==='settings'){showRates();showAutoStatus()}
+ $('backNav').style.display=page==='home'?'none':'inline-flex';
+ scrollTo(0,0);
+}function renderDashboard(){
+ if(!unlocked)return;
+ const date=today(),todayAppts=db.appointments.filter(a=>a.date===date).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));
+ const progress=db.jobs.filter(j=>j.status==='In lavorazione').length;
+ const done=db.jobs.filter(j=>j.status==='Completato'||j.status==='Consegnato').length;
+ $('dashToday').textContent=todayAppts.length;$('dashProgress').textContent=progress;$('dashDone').textContent=done;
+ $('dashDate').textContent=new Date(date+'T12:00:00').toLocaleDateString('it-CH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ const box=$('dashAgenda');box.replaceChildren();
+ if(!todayAppts.length){const empty=document.createElement('div');empty.className='dash-empty';empty.textContent='Nessun appuntamento per oggi.';box.appendChild(empty);return}
+ for(const a of todayAppts){const btn=document.createElement('button');btn.type='button';btn.className='dash-appointment';btn.onclick=()=>editAppt(a.id);
+ const time=document.createElement('span');time.className='dash-time';time.textContent=a.time||'—';
+ const info=document.createElement('span');info.className='dash-appt-main';const name=document.createElement('strong');name.textContent=a.client||'Cliente';const details=document.createElement('small');details.textContent=[a.plate,a.vehicle,a.desc].filter(Boolean).join(' · ');info.append(name,details);
+ const status=document.createElement('span');status.className='dash-status'+(a.status==='In lavorazione'?' progress':a.status==='Completato'?' done':a.status==='Annullato'?' cancelled':'');status.textContent=a.status||'Prenotato';btn.append(time,info,status);box.appendChild(btn)}
+}
+function normalizeSearch(t){return String(t||'').trim().toLocaleLowerCase('it').replace(/\s+/g,' ')}
+function clearApptSelection(){s('a_vehicleId','');$('a_matchHelp').textContent='Veicolo modificato: seleziona di nuovo dall’archivio oppure salva i dati manualmente.'}
+function selectApptVehicle(vehicleId){
+ const c=db.clients.find(x=>x.id===vehicleId);if(!c)return;
+ s('a_vehicleId',c.id);s('a_client',c.name||'');s('a_plate',c.plate||'');s('a_vehicle',c.vehicle||'');
+ $('a_matches').style.display='none';$('a_matches').innerHTML='';
+ $('a_customerHint').textContent='✓ Cliente e auto recuperati dall’archivio.';
+ $('a_matchHelp').textContent='✓ Veicolo selezionato: '+(c.vehicle||'Auto')+(c.vin?' · Telaio '+c.vin:'');
+}
+function addAnotherApptCar(){
+ const name=v('a_client').trim();if(!name){alert('Scrivi prima il nome del cliente.');return}
+ const known=db.clients.filter(c=>normalizeSearch(c.name)===normalizeSearch(name));
+ if(!known.length){alert('Cliente non ancora registrato: completa l’appuntamento e potrai aprire la scheda cliente al salvataggio.');return}
+ pendingAppointmentDraft=null;openNewCarForm(name,{},false);clientReturnPage='apptEdit';
+}
+function searchApptVehicles(){
+ s('a_vehicleId','');
+ const name=normalizeSearch(v('a_client')),plate=normalizedPlate(v('a_plate'));
+ const box=$('a_matches');box.innerHTML='';
+ const field=document.activeElement?.id;
+ const exact=db.clients.filter(c=>normalizeSearch(c.name)===name);
+ let matches=db.clients.filter(c=>field==='a_plate'?(plate&&normalizedPlate(c.plate).includes(plate)):(name&&normalizeSearch(c.name).includes(name)));
+ if(!matches.length&&field!=='a_plate'&&plate)matches=db.clients.filter(c=>normalizedPlate(c.plate).includes(plate));
+ $('a_customerHint').textContent=exact.length?('✓ Cliente già registrato: '+exact.length+' auto. Scegli un’auto qui sotto o premi «Aggiungi un’altra auto».'):(name?'Cliente non ancora registrato: al salvataggio potrai aggiungerlo all’archivio.':'');
+ if(!name&&!plate){box.style.display='none';$('a_matchHelp').textContent='Cerca per nome o targa. Se ci sono più veicoli, scegli quello giusto.';return}
+ if(!matches.length){box.style.display='none';$('a_matchHelp').textContent='Nessun veicolo trovato: puoi compilare manualmente.';return}
+ // Una sola auto con nome esatto: completa automaticamente senza sovrascrivere una targa già scritta.
+ if(field==='a_client'&&exact.length===1&&!plate){selectApptVehicle(exact[0].id);$('a_customerHint').textContent='✓ Cliente e auto compilati automaticamente. Per una seconda auto usa il pulsante dedicato.';return}
+ box.style.display='block';$('a_matchHelp').textContent=matches.length+' veicolo/i trovato/i: scegli il veicolo corretto.';
+ for(const c of matches.slice(0,30)){
+  const b=document.createElement('button');b.type='button';b.className='item';
+  const title=document.createElement('strong');title.textContent=(c.name||'Cliente')+' — '+(c.vehicle||'Veicolo non specificato');
+  const sub=document.createElement('span');sub.className='muted';sub.textContent=' '+(c.plate||'Senza targa')+(c.vin?' · VIN '+c.vin:'');
+  b.append(title,document.createElement('br'),sub);b.onclick=()=>selectApptVehicle(c.id);box.appendChild(b);
+ }
+}
+function renderApptJobPanel(apptId){
+ const panel=$('a_jobPanel'),links=$('a_linkedJobs'),button=$('a_createJob');
+ panel.style.display=apptId?'block':'none';links.innerHTML='';
+ if(!apptId)return;
+ const jobs=db.jobs.filter(j=>j.appointmentId===apptId);
+ button.textContent=jobs.length?'🔧 Crea un altro lavoro da appuntamento':'🔧 Crea lavoro da appuntamento';
+ if(jobs.length){
+  const heading=document.createElement('p');heading.textContent='Lavori collegati:';links.appendChild(heading);
+  for(const job of jobs){
+   const b=document.createElement('button');b.type='button';b.className='item';
+   b.textContent=(job.date||'')+' · '+(job.desc||'Lavoro')+' · '+(job.plate||'');
+   b.onclick=()=>editJob(job.id);links.appendChild(b);
+  }
+ }
+}
+let pendingAppointmentId='';
+function createJobFromAppt(){
+ const appt=db.appointments.find(a=>a.id===v('a_id'));
+ if(!appt)return alert('Salva prima l’appuntamento.');
+ const linked=db.jobs.filter(j=>j.appointmentId===appt.id);
+ if(linked.length&&!confirm('Questo appuntamento ha già un lavoro collegato. Vuoi crearne un altro?'))return;
+ editJob();
+ pendingAppointmentId=appt.id;s('j_appointmentId',appt.id);
+ s('j_date',appt.date||today());s('j_client',appt.client||'');
+ s('j_plate',appt.plate||'');s('j_vehicle',appt.vehicle||'');
+ s('j_desc',appt.desc||'');
+ s('j_status','In lavorazione');
+ let vehicle=appt.vehicleId?db.clients.find(c=>c.id===appt.vehicleId):null;
+ if(!vehicle){
+  const matches=db.clients.filter(c=>normalizeSearch(c.name)===normalizeSearch(appt.client)&&normalizedPlate(c.plate)===normalizedPlate(appt.plate)&&normalizeSearch(c.vehicle)===normalizeSearch(appt.vehicle));
+  if(matches.length===1)vehicle=matches[0];
+ }
+ if(vehicle)for(const k of ['vin','engine','kw','ident'])s('j_'+k,vehicle[k]??'');
+ lastPlateLookup=normalizedPlate(appt.plate);
+ $('j_apptInfo').style.display='block';
+ $('j_apptInfo').textContent='Collegato all’appuntamento del '+(appt.date||'')+' alle '+(appt.time||'')+'. Lo stato cambierà al salvataggio del lavoro.';
+ $('quickMsg').textContent='✓ Dati copiati dall’appuntamento.';
+}
+function editAppt(xid){let x=db.appointments.find(a=>a.id===xid)||{};
+ ['id','date','time','client','plate','vehicle','desc','status'].forEach(k=>s('a_'+k,x[k]??(k==='date'?today():k==='status'?'Prenotato':'')));
+ s('a_vehicleId',x.vehicleId||'');$('a_customerHint').textContent='';$('a_matches').innerHTML='';$('a_matches').style.display='none';
+ $('a_matchHelp').textContent=x.vehicleId?'Veicolo collegato all’archivio.':'Cerca per nome o targa. Se ci sono più veicoli, scegli quello giusto.';
+ $('a_delete').classList.toggle('hide',!x.id);renderApptJobPanel(x.id);go('apptEdit')}
+let pendingAppointmentDraft=null;
+function appointmentDraft(){let x={};['id','date','time','client','plate','vehicle','desc','status','vehicleId'].forEach(k=>x[k]=v('a_'+k).trim());x.id=x.id||id();x.plate=x.plate.toUpperCase();return x}
+async function persistAppointment(x){
+ const before=db.appointments.map(a=>({...a}));
+ const i=db.appointments.findIndex(a=>a.id===x.id);if(i<0)db.appointments.push(x);else db.appointments[i]=x;
+ if(await save()){go('agenda');return true}db.appointments=before;return false;
+}
+$('apptForm').onsubmit=async ev=>{
+ ev.preventDefault();const x=appointmentDraft();
+ if(x.vehicleId){const c=db.clients.find(c=>c.id===x.vehicleId);if(!c||normalizeSearch(c.name)!==normalizeSearch(x.client)||normalizedPlate(c.plate)!==normalizedPlate(x.plate)||normalizeSearch(c.vehicle)!==normalizeSearch(x.vehicle))x.vehicleId=''}
+ const plateMatches=x.plate?db.clients.filter(c=>normalizedPlate(c.plate)===normalizedPlate(x.plate)):[];
+ const exactName=db.clients.filter(c=>normalizeSearch(c.name)===normalizeSearch(x.client));
+ const existing=x.vehicleId?db.clients.find(c=>c.id===x.vehicleId):plateMatches.find(c=>normalizeSearch(c.name)===normalizeSearch(x.client));
+ if(!existing&&plateMatches.length){if(!confirm('Questa targa è già presente nell’archivio. Vuoi salvare solo l’appuntamento senza creare un’altra auto?'))return;}
+ else if(!existing&&x.plate){
+  const msg=exactName.length?'Vuoi aggiungere questa auto a '+exactName[0].name+'? Si aprirà la scheda completa per inserire tutti i dati.':'Vuoi registrare '+x.client+' come nuovo cliente? Si aprirà la scheda per inserire telefono e dati dell’auto.';
+  if(confirm(msg)){
+   pendingAppointmentDraft=x;
+   openNewCarForm(x.client,{plate:x.plate,vehicle:x.vehicle},true);
+   return;
+  }
+ }
+ await persistAppointment(x);
+};
+function renderAppts(){let a=[...db.appointments].sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time));$('appts').innerHTML=a.length?a.map(x=>`<button class="item" data-id="${e(x.id)}" onclick="editAppt(this.dataset.id)"><strong>${e(x.date)} ${e(x.time)} — ${e(x.client)}</strong>${e(x.plate)} · ${e(x.vehicle)}<br><span class="muted">${e(x.desc)} · ${e(x.status)}</span></button>`).join(''):'<p class="muted">Nessun appuntamento.</p>'}async function delItem(collection,input,page){if(!confirm('Eliminare questa scheda?'))return;db[collection]=db[collection].filter(x=>x.id!==v(input));if(await save())go(page)}function addPart(p={}){let d=document.createElement('div');d.className='part';d.innerHTML=`<div class="field"><label>Materiale / ricambio</label><input class="pn" list="knownParts" value="${e(p.name||'')}"></div><div class="two"><div class="field"><label>Quantità</label><input class="pq" type="number" min="0" step="0.01" value="${e(p.qty??1)}"></div><div class="field"><label>Prezzo unitario (CHF)</label><input class="pp" type="number" min="0" step="0.01" value="${e(p.price??0)}"></div></div><div class="row"><strong class="subtotal">0,00 CHF</strong><button type="button" class="secondary danger">Rimuovi</button></div>`;d.querySelectorAll('input').forEach(i=>i.oninput=calc);d.querySelector('button').onclick=()=>{d.remove();calc()};$('parts').appendChild(d);calc()}function quickPart(name){
+ let price=0;
+ for(const job of [...db.jobs].reverse()){
+  const previous=(job.parts||[]).find(p=>(p.name||'').trim().toLowerCase()===name.toLowerCase());
+  if(previous){price=Number(previous.price)||0;break}
+ }
+ addPart({name,qty:1,price});
+ const last=$('parts').lastElementChild;
+ if(last){last.querySelector('.pq').focus();last.scrollIntoView({behavior:'smooth',block:'nearest'})}
+}
+function getParts(){return [...$('parts').querySelectorAll('.part')].map(d=>({name:d.querySelector('.pn').value.trim(),qty:Number(d.querySelector('.pq').value)||0,price:Number(d.querySelector('.pp').value)||0}))}function calc(){let p=getParts(),m=p.reduce((a,x)=>a+x.qty*x.price,0),l=(Number(v('j_hours'))||0)*(Number(v('j_rate'))||0);$('parts').querySelectorAll('.part').forEach((d,i)=>d.querySelector('.subtotal').textContent=eur(p[i].qty*p[i].price));$('mats').textContent=eur(m);$('labor').textContent=eur(l);$('tireCost').textContent=eur(tireCharge());$('grand').textContent=eur(m+l+tireCharge());return m+l+tireCharge()}function refreshSuggestions(){
+ const clients=[...new Set(db.clients.map(x=>x.name).filter(Boolean))];
+ const vehicles=[...new Set(db.clients.map(x=>x.vehicle).filter(Boolean))];
+ const materials=[...new Set(db.jobs.flatMap(x=>(x.parts||[]).map(p=>p.name)).filter(Boolean))];
+ $('knownClients').innerHTML=clients.map(x=>`<option value="${e(x)}">`).join('');
+ $('knownVehicles').innerHTML=vehicles.map(x=>`<option value="${e(x)}">`).join('');
+ $('knownParts').innerHTML=materials.map(x=>`<option value="${e(x)}">`).join('');
+}
+function searchJobVehicles(){
+ const name=normalizeSearch(v('j_client')),box=$('j_matches');box.innerHTML='';
+ if(!name){box.style.display='none';$('j_matchHelp').textContent='Scrivi il nome del cliente e scegli il veicolo dall’elenco.';return}
+ const matches=db.clients.filter(c=>normalizeSearch(c.name).includes(name));
+ if(!matches.length){box.style.display='none';$('j_matchHelp').textContent='Cliente non trovato: puoi inserire i dati manualmente.';return}
+ box.style.display='block';$('j_matchHelp').textContent=matches.length+' auto trovata/e. Scegli quella corretta.';
+ for(const c of matches.slice(0,30)){
+  const b=document.createElement('button');b.type='button';b.className='item';
+  const title=document.createElement('strong');title.textContent=(c.name||'Cliente')+' — '+(c.vehicle||'Veicolo non specificato');
+  const detail=document.createElement('span');detail.className='muted';detail.textContent=(c.plate||'Senza targa')+(c.vin?' · VIN '+c.vin:'');
+  b.append(title,detail);b.onclick=()=>selectJobVehicle(c.id);box.appendChild(b);
+ }
+}
+function selectJobVehicle(vehicleId){
+ const c=db.clients.find(x=>x.id===vehicleId);if(!c)return;
+ s('j_client',c.name||'');s('j_plate',c.plate||'');s('j_vehicle',c.vehicle||'');
+ for(const k of ['vin','engine','kw','ident'])s('j_'+k,c[k]??'');
+ lastPlateLookup=normalizedPlate(c.plate);
+ $('j_matches').innerHTML='';$('j_matches').style.display='none';
+ $('j_matchHelp').textContent='✓ Auto selezionata: '+(c.vehicle||'Veicolo')+' · '+(c.plate||'Senza targa');
+ $('quickMsg').textContent='✓ Cliente e veicolo compilati dall’archivio.';
+}
+let lastPlateLookup = null;
+function fillFromPlate(){
+ const plate=v('j_plate').trim().toUpperCase().replace(/\s/g,'');
+ const currentId=v('j_id');
+ const match=plate?(db.clients.find(x=>(x.plate||'').toUpperCase().replace(/\s/g,'')===plate)
+ || [...db.jobs].reverse().find(x=>(x.plate||'').toUpperCase().replace(/\s/g,'')===plate)):null;
+ // Preserve user-entered details until the plate actually changes.
+ if(lastPlateLookup===plate)return;
+ lastPlateLookup=plate;
+ if(match){
+  s('j_client',match.name||match.client||'');
+  s('j_vehicle',match.vehicle||'');
+  for(const k of ['vin','engine','kw','ident'])s('j_'+k,match[k]||'');
+  $('quickMsg').textContent='✓ Cliente e veicolo aggiornati per questa targa.';
+ }else{
+  s('j_client','');s('j_vehicle','');for(const k of ['vin','engine','kw','ident'])s('j_'+k,'');
+  $('quickMsg').textContent=plate?'Targa non trovata: inserisci i dati del nuovo cliente.':'Inserisci una targa.';
+ }
+}
+function duplicateJob(){
+ let plate=v('j_plate').trim().toUpperCase();
+ let candidates=plate?db.jobs.filter(x=>(x.plate||'').toUpperCase()===plate):db.jobs;
+ if(!candidates.length){alert('Nessun lavoro precedente da duplicare. Inserisci una targa già presente nello storico.');return}
+ let last=[...candidates].sort((a,b)=>b.date.localeCompare(a.date))[0];
+ if(!confirm('Copiare l’ultimo lavoro trovato? Potrai modificarlo prima di salvarlo.'))return;
+ const original=last;
+ s('j_id','');s('j_date',today());lastPlateLookup=null;
+ for(const k of ['client','plate','vehicle','vin','engine','kw','ident','km','desc','hours','rate','notes'])s('j_'+k,original[k]??'');
+ s('j_status','Da fare');s('j_tireSize',original.tireSize||'');for(const pos of ['VR','VL','HR','HL'])s('j_tire'+pos,original.tireDepth?.[pos]??'');setCheckedValue('tireSeason',original.tireSeason||'');setCheckedValue('tireService',original.tireService||'none');s('j_tireRate',original.tireRate??(original.tireService==='wheels'?getRates().wheels:original.tireService==='tires'?getRates().tires:0));$('parts').innerHTML='';
+ (original.parts||[]).forEach(addPart);
+ $('j_delete').classList.add('hide');calc();
+ $('quickMsg').textContent='✓ Lavoro duplicato. Verrà salvato come nuova scheda.';
+}
+function editJob(xid){let x=db.jobs.find(a=>a.id===xid)||{};window.otmPhotos=[...(x.photos||[])];setTimeout(()=>{s('j_payment',x.payment||'Da pagare');s('j_deposit',x.deposit||0);s('j_nextService',x.nextService||'');s('j_nextKm',x.nextKm||'');renderJobPhotos();},0);
+pendingAppointmentId='';s('j_appointmentId','');$('j_apptInfo').style.display='none';refreshSuggestions();$('quickMsg').textContent='';lastPlateLookup=null;$('j_matches').innerHTML='';$('j_matches').style.display='none';$('j_matchHelp').textContent='Scrivi il nome del cliente e scegli il veicolo dall’elenco.';
+if(!x.id)x.rate=getRates().hour;
+['id','date','client','plate','vehicle','vin','engine','kw','ident','km','desc','status','hours','rate','notes'].forEach(k=>s('j_'+k,x[k]??(k==='date'?today():k==='status'?'Da fare':k==='hours'||k==='rate'?0:'')));s('j_tireSize',x.tireSize||'');for(const pos of ['VR','VL','HR','HL'])s('j_tire'+pos,x.tireDepth?.[pos]??'');setCheckedValue('tireSeason',x.tireSeason||'');setCheckedValue('tireService',x.tireService||'none');s('j_tireRate',x.tireRate??(x.tireService==='wheels'?getRates().wheels:x.tireService==='tires'?getRates().tires:0));$('parts').innerHTML='';(x.parts||[]).forEach(addPart);$('j_delete').classList.toggle('hide',!x.id);calc();go('jobEdit')}// Una scheda cliente-auto per targa; conserva telefono e note esistenti.
+function normalizedPlate(plate){return String(plate||'').toUpperCase().replace(/\s+/g,'').trim()}
+function mergeClientFromJob(job){
+ const plate=normalizedPlate(job.plate);
+ if(!plate||!String(job.client||'').trim())return false;
+ let candidates=db.clients.filter(c=>normalizedPlate(c.plate)===plate);
+ let existing=(job.vin&&candidates.find(c=>c.vin&&String(c.vin).toUpperCase()===String(job.vin).toUpperCase())) ||
+ candidates.find(c=>normalizeSearch(c.name)===normalizeSearch(job.client)&&normalizeSearch(c.vehicle)===normalizeSearch(job.vehicle)&&(!job.vin||!c.vin||String(c.vin).toUpperCase()===String(job.vin).toUpperCase()));
+ if(!existing&&candidates.length===1&&!job.vin&&!job.vehicle&&normalizeSearch(candidates[0].name)===normalizeSearch(job.client))existing=candidates[0];
+ const fields={name:job.client,plate:job.plate,vehicle:job.vehicle,vin:job.vin,engine:job.engine,kw:job.kw,ident:job.ident};
+ if(existing){
+   let changed=false;
+   for(const [k,value] of Object.entries(fields)){
+     // Non eliminare informazioni già registrate quando il campo lavoro è vuoto.
+     if(String(value??'').trim()&&existing[k]!==value){existing[k]=value;changed=true}
+   }
+   return changed;
+ }
+ db.clients.push({id:id(),phone:'',notes:'',...Object.fromEntries(Object.entries(fields).map(([k,val])=>[k,String(val??'').trim()]))});
+ return true;
+}
+async function recoverClientsFromJobs(){
+ if(!db.jobs.length)return alert('Non ci sono lavori nello storico.');
+ if(!confirm('Recuperare clienti e auto dai lavori già salvati? I dati vuoti non cancelleranno quelli esistenti.'))return;
+ const oldClients=JSON.parse(JSON.stringify(db.clients));
+ let count=0;
+ const jobs=[...db.jobs].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+ for(const job of jobs)if(mergeClientFromJob(job))count++;
+ if(!count)return alert('Clienti e auto già aggiornati.');
+ if(await save()){renderClients();alert('Clienti e auto aggiornati dallo storico.')}else db.clients=oldClients;
+}
+$('jobForm').onsubmit=async ev=>{ev.preventDefault();let x={};['id','date','client','plate','vehicle','vin','engine','kw','ident','km','desc','status','hours','rate','notes'].forEach(k=>x[k]=v('j_'+k).trim());x.id=x.id||id();x.plate=x.plate.toUpperCase();x.vin=x.vin.toUpperCase();x.engine=x.engine.toUpperCase();x.parts=getParts();x.tireSize=v('j_tireSize').trim();x.tireSeason=checkedValue('tireSeason');x.tireService=checkedValue('tireService')||'none';x.tireRate=Number(v('j_tireRate'))||0;x.tireDepth=Object.fromEntries(['VR','VL','HR','HL'].map(pos=>[pos,v('j_tire'+pos).trim()]));x.total=calc();let i=db.jobs.findIndex(a=>a.id===x.id);const oldJobs=db.jobs.slice(),oldClients=JSON.parse(JSON.stringify(db.clients));if(i<0&&(v('j_appointmentId')||pendingAppointmentId))x.appointmentId=v('j_appointmentId')||pendingAppointmentId;
+else if(i>=0&&db.jobs[i].appointmentId)x.appointmentId=db.jobs[i].appointmentId;
+const oldAppointments=db.appointments.map(a=>({...a}));
+const prior=i>=0?db.jobs[i]:{};x.payment=v('j_payment');x.deposit=Number(v('j_deposit'))||0;x.photos=window.otmPhotos||prior.photos||[];x.nextService=v('j_nextService');x.nextKm=v('j_nextKm');
+if(i<0)db.jobs.push(x);else db.jobs[i]=x;
+mergeClientFromJob(x);
+if(x.appointmentId){
+ const appt=db.appointments.find(a=>a.id===x.appointmentId);
+ if(appt)appt.status='In lavorazione';
+}
+if(await save()){pendingAppointmentId='';go('jobs')}
+else{db.jobs=oldJobs;db.clients=oldClients;db.appointments=oldAppointments;}};function renderJobs(){let q=v('search').toLowerCase(),a=[...db.jobs].filter(x=>[x.plate,x.client,x.desc,x.vehicle,x.vin,x.engine,x.ident].join(' ').toLowerCase().includes(q)).sort((x,y)=>y.date.localeCompare(x.date));$('jobItems').innerHTML=a.length?a.map(x=>`<button class="item" data-id="${e(x.id)}" onclick="editJob(this.dataset.id)"><strong>${e(x.plate)} — ${e(x.client)}</strong>${e(x.date)} · ${e(x.desc)}<div class="row"><span class="muted">${e(x.status)}</span><strong>${eur(x.total)}</strong></div></button>`).join(''):'<p class="muted">Nessun lavoro trovato.</p>'}let clientReturnPage='clients';
+function openNewCarForm(name,car={},fromAppointment=false){
+ const related=db.clients.filter(c=>normalizeSearch(c.name)===normalizeSearch(name));
+ clientReturnPage=fromAppointment?'apptEdit':'clients';
+ editClient();s('c_name',related[0]?.name||name||'');s('c_phone',related[0]?.phone||'');
+ for(const k of ['plate','vehicle','vin','engine','kw','ident'])s('c_'+k,car[k]||'');
+ $('c_context').style.display='block';$('c_context').textContent=fromAppointment?'Compila la scheda dell’auto. Salvando qui registrerai anche l’appuntamento. «Indietro» torna all’appuntamento senza salvare.':related.length?'Nuova auto per '+related[0].name+'. Il cliente resterà lo stesso.':'Inserisci i dati del nuovo cliente e della sua auto.';
+ $('c_saveButton').textContent=fromAppointment?'Salva cliente, auto e appuntamento':'Salva nuova auto';
+}
+function addCarForClient(vehicleId){const c=db.clients.find(x=>x.id===vehicleId);if(!c)return;pendingAppointmentDraft=null;openNewCarForm(c.name)}
+function backFromClient(){if(clientReturnPage==='apptEdit'){pendingAppointmentDraft=null;go('apptEdit')}else go('clients')}
+function editClient(xid){let x=db.clients.find(a=>a.id===xid)||{};clientReturnPage='clients';$('c_context').style.display='none';$('c_saveButton').textContent='Salva cliente e auto';['id','name','phone','plate','vehicle','vin','engine','kw','ident','notes'].forEach(k=>s('c_'+k,x[k]||''));$('c_delete').classList.toggle('hide',!x.id);go('clientEdit')}
+$('clientForm').onsubmit=async ev=>{
+ ev.preventDefault();let x={};['id','name','phone','plate','vehicle','vin','engine','kw','ident','notes'].forEach(k=>x[k]=v('c_'+k).trim());
+ x.id=x.id||id();x.plate=x.plate.toUpperCase();x.vin=x.vin.toUpperCase();x.engine=x.engine.toUpperCase();
+ const dup=x.plate&&db.clients.find(c=>c.id!==x.id&&normalizedPlate(c.plate)===normalizedPlate(x.plate));
+ if(dup){alert('Questa targa è già registrata per '+dup.name+'. Apri la scheda esistente invece di crearne una nuova.');return}
+ const previousClients=db.clients.map(c=>({...c})),previousAppointments=db.appointments.map(a=>({...a}));
+ const i=db.clients.findIndex(a=>a.id===x.id);if(i<0)db.clients.push(x);else db.clients[i]=x;
+ if(pendingAppointmentDraft){let a={...pendingAppointmentDraft,client:x.name,plate:x.plate,vehicle:x.vehicle,vehicleId:x.id};const ai=db.appointments.findIndex(z=>z.id===a.id);if(ai<0)db.appointments.push(a);else db.appointments[ai]=a;}
+ if(await save()){
+  if(pendingAppointmentDraft){pendingAppointmentDraft=null;go('agenda')}
+  else if(clientReturnPage==='apptEdit'){s('a_client',x.name);s('a_plate',x.plate);s('a_vehicle',x.vehicle);s('a_vehicleId',x.id);go('apptEdit')}else go('clients');
+ }else{db.clients=previousClients;db.appointments=previousAppointments}
+};
+let selectedHistoryClient='';
+function jobsForClient(group){
+ const names=new Set(group.map(c=>normalizeSearch(c.name)).filter(Boolean));
+ const plates=new Set(group.map(c=>normalizedPlate(c.plate)).filter(Boolean));
+ return db.jobs.filter(j=>names.has(normalizeSearch(j.client))||(j.plate&&plates.has(normalizedPlate(j.plate))));
+}
+function openClientHistory(name){selectedHistoryClient=normalizeSearch(name);go('clientHistory')}
+function renderClientHistory(){
+ const group=db.clients.filter(c=>normalizeSearch(c.name)===selectedHistoryClient);
+ const jobs=jobsForClient(group).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ $('clientHistoryTitle').textContent='Storico · '+(group[0]?.name||'Cliente');
+ $('clientHistoryInfo').textContent=group.length+' auto · '+jobs.length+' interventi · Totale lavori '+eur(jobs.reduce((sum,j)=>sum+(Number(j.total)||0),0));
+ const container=$('clientHistoryItems');container.innerHTML='';
+ if(!jobs.length){const p=document.createElement('p');p.className='muted';p.textContent='Nessuno storico disponibile per questo cliente.';container.appendChild(p);return}
+ for(const job of jobs){
+  const b=document.createElement('button');b.type='button';b.className='item';
+  const title=document.createElement('strong');title.textContent=(job.date||'Senza data')+' · '+(job.plate||'Senza targa');
+  const desc=document.createElement('div');desc.textContent=job.desc||'Intervento';
+  const footer=document.createElement('div');footer.className='row';
+  const status=document.createElement('span');status.className='muted';status.textContent=job.status||'';
+  const amount=document.createElement('strong');amount.textContent=eur(job.total);
+  footer.append(status,amount);b.append(title,desc,footer);b.onclick=()=>editJob(job.id);container.appendChild(b);
+ }
+}
+function renderClients(){
+ const q=normalizeSearch(v('clientSearch'));const groups=new Map();
+ for(const c of db.clients){const k=normalizeSearch(c.name)||('senzanome:'+c.id);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(c)}
+ const rows=[...groups.values()].sort((a,b)=>normalizeSearch(a[0].name).localeCompare(normalizeSearch(b[0].name)));
+ const matches=rows.filter(group=>group.some(c=>[c.name,c.plate,c.vehicle,c.phone,c.vin,c.engine,c.ident].some(t=>normalizeSearch(t).includes(q))));
+ const container=$('clientItems');container.innerHTML='';
+ if(!matches.length){container.innerHTML=q?'<p class="muted">Nessun cliente o veicolo trovato.</p>':'<p class="muted">Nessun cliente registrato.</p>';return}
+ for(const group of matches){
+  const card=document.createElement('div');card.className='card';
+  const title=document.createElement('button');title.type='button';title.className='item';title.style.width='100%';
+  const label=document.createElement('strong');label.textContent=group[0].name+' · '+group.length+' auto';
+  const hint=document.createElement('span');hint.className='muted';hint.textContent='Tocca per vedere lo storico ›';
+  title.append(label,hint);title.onclick=()=>openClientHistory(group[0].name);card.appendChild(title);
+  const jobs=jobsForClient(group);const summary=document.createElement('p');summary.className='muted';summary.style.fontSize='0.82rem';
+  summary.textContent=group.length+' veicoli registrati';card.appendChild(summary);
+  const phone=document.createElement('p');phone.className='muted';phone.textContent=group.find(c=>c.phone)?.phone||'';if(phone.textContent)card.appendChild(phone);
+  for(const c of group){const b=document.createElement('button');b.type='button';b.className='item';b.textContent='✏️ '+(c.vehicle||'Auto senza modello')+' · '+(c.plate||'Senza targa');b.onclick=()=>editClient(c.id);card.appendChild(b)}
+  const add=document.createElement('button');add.type='button';add.className='secondary';add.style.width='100%';add.textContent='➕ Aggiungi un’altra auto';add.onclick=()=>addCarForClient(group[0].id);card.appendChild(add);container.appendChild(card)
+ }
+}function exportBackup(){alert('Attenzione: il backup esportato NON è cifrato. Conservalo in un luogo sicuro.');let b=new Blob([JSON.stringify({format:key,...db},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='officina-backup-'+today()+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}async function importBackup(){let f=$('backupFile').files[0];if(!f)return alert('Seleziona il file di backup.');try{let x=JSON.parse(await f.text());if(!['appointments','jobs','clients'].every(k=>Array.isArray(x[k])))throw Error('Formato non valido');if(!confirm('Sostituire tutti i dati presenti?'))return;db={...x,appointments:x.appointments,jobs:x.jobs,clients:x.clients,rates:x.rates||{}};if(await save()){alert('Backup ripristinato');go('home')}}catch(err){alert('Errore nel backup: '+err.message)}}if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+/* OTM Garage: additional features */
+function otmBackupNotice(){const d=db.lastBackup||'';const days=d?Math.floor((Date.now()-new Date(d).getTime())/86400000):999;const el=document.querySelector('.dash-backup');if(el)el.textContent=days>=7?'🔒 Backup consigliato: nessun backup recente registrato su questo dispositivo.':'🔒 Ultimo backup: '+new Date(d).toLocaleDateString('it-CH');}
+const originalExport=exportBackup;exportBackup=function(){originalExport();db.lastBackup=new Date().toISOString();save().then(()=>otmBackupNotice());};
+function saveVat(){db.vat=Number(v('cfg_vat'))||0;save().then(ok=>{if(ok)alert('IVA salvata')})}
+const oldShowRates=showRates;showRates=function(){oldShowRates();s('cfg_vat',db.vat??0)};
+function renderJobPhotos(){const box=$('j_photos');box.replaceChildren();(window.otmPhotos||[]).forEach((p,i)=>{const wrap=document.createElement('div');wrap.className='otm-photo';const img=document.createElement('img');img.src=p;img.alt='Foto lavoro';const del=document.createElement('button');del.className='secondary';del.type='button';del.textContent='Rimuovi';del.onclick=()=>{window.otmPhotos.splice(i,1);renderJobPhotos()};wrap.append(img,del);box.append(wrap)})}
+function addJobPhoto(input){const f=input.files?.[0];input.value='';if(!f)return;if((window.otmPhotos||[]).length>=2)return alert('Massimo 2 foto per lavoro.');if(!f.type.startsWith('image/'))return alert('Seleziona una foto.');const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{const max=720,scale=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);c.getContext('2d').drawImage(im,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',.6);if(data.length>260000)return alert('Foto troppo grande.');(window.otmPhotos??=[]).push(data);renderJobPhotos()};im.src=reader.result};reader.readAsDataURL(f)}
+function newQuote(qid){const q=(db.quotes||[]).find(x=>x.id===qid)||{};$('quoteEditor').classList.remove('hide');for(const k of ['id','client','plate','desc','parts','hours','rate'])s('q_'+k,q[k]??(k==='rate'?getRates().hour:''));refreshSuggestions();$('quoteEditor').scrollIntoView({behavior:'smooth'})}
+function quoteDraft(){return {id:v('q_id')||id(),date:today(),client:v('q_client').trim(),plate:v('q_plate').trim().toUpperCase(),desc:v('q_desc').trim(),parts:Number(v('q_parts'))||0,hours:Number(v('q_hours'))||0,rate:Number(v('q_rate'))||0,vat:Number(db.vat)||0}}
+async function saveQuote(){const q=quoteDraft();if(!q.client||!q.desc)return alert('Inserisci cliente e descrizione.');db.quotes??=[];const old=[...db.quotes],i=db.quotes.findIndex(x=>x.id===q.id);if(i<0)db.quotes.push(q);else db.quotes[i]=q;if(await save()){s('q_id',q.id);renderQuotes();alert('Preventivo salvato.')}else db.quotes=old}
+function quoteTotal(q){const net=q.parts+q.hours*q.rate;return {net,vat:net*q.vat/100,total:net*(1+q.vat/100)}}
+function renderQuotes(){const box=$('quoteItems');box.replaceChildren();for(const q of [...(db.quotes||[])].reverse()){const b=document.createElement('button');b.className='item';b.textContent=(q.date||'')+' · '+q.client+' · '+eur(quoteTotal(q).total);b.onclick=()=>newQuote(q.id);box.append(b)}if(!(db.quotes||[]).length)box.textContent='Nessun preventivo.'}
+function printQuote(){
+ const q=quoteDraft();
+ if(!q.client||!q.desc)return alert('Compila prima cliente e descrizione.');
+ const t=quoteTotal(q),win=window.open('','_blank');
+ if(!win)return alert('Consenti le finestre popup per creare il PDF.');
+ const logo=new URL('otm-logo.png',location.href).href;
+ const printable='<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preventivo OTM Garage</title><style>'+
+ '@page{size:A4 portrait;margin:15mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:white;color:#152b3a;font:11pt Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+ '.sheet{width:100%;max-width:180mm;margin:0 auto}.head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:3px solid #087f85}.logo{width:74px;height:74px;object-fit:contain}.brand{font-size:23pt;font-weight:900;color:#0b4053;letter-spacing:1px}.tag{font-size:9pt;color:#57717e;margin-top:4px}'+
+ 'h1{font-size:19pt;margin:24px 0 15px;color:#087f85}.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 25px}.meta>div{border:1px solid #d5e1e5;border-radius:7px;padding:12px;min-height:68px}.lab{font-size:8pt;color:#607887;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}.description{white-space:pre-wrap;overflow-wrap:anywhere;margin:14px 0 22px;line-height:1.6}'+
+ 'table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#e9f4f4;color:#1d4e58;text-align:left;font-size:9pt;text-transform:uppercase}th,td{padding:12px 10px;border-bottom:1px solid #d9e4e7}td:last-child,th:last-child{text-align:right}.total td{font-size:15pt;font-weight:900;color:#087f85;border-top:2px solid #087f85}.foot{margin-top:40px;padding-top:14px;border-top:1px solid #d9e4e7;color:#657b86;font-size:9pt}'+
+ '@media screen{body{background:#e6edf0;padding:24px}.sheet{background:white;max-width:210mm;min-height:297mm;padding:15mm;box-shadow:0 8px 35px #0002}}@media print{.sheet{max-width:none;min-height:0;padding:0}tr{break-inside:avoid}}'+
+ '</style></head><body><main class="sheet"><header class="head"><img class="logo" src="'+logo+'" alt="Logo OTM Garage"><div><div class="brand">OTM GARAGE</div><div class="tag">La tua officina, sempre con te</div></div></header><h1>PREVENTIVO</h1>'+
+ '<div class="meta"><div><div class="lab">Cliente</div><strong>'+e(q.client)+'</strong></div><div><div class="lab">Data e targa</div><strong>'+e(q.date||today())+'</strong><div>'+e(q.plate||'—')+'</div></div></div>'+
+ '<div class="lab">Intervento previsto</div><div class="description">'+e(q.desc)+'</div>'+
+ '<table><thead><tr><th>Descrizione</th><th>Importo CHF</th></tr></thead><tbody>'+
+ '<tr><td>Ricambi e materiali</td><td>'+eur(q.parts)+'</td></tr><tr><td>Manodopera ('+e(q.hours)+' ore × '+eur(q.rate)+')</td><td>'+eur(q.hours*q.rate)+'</td></tr>'+
+ '<tr><td>Subtotale</td><td>'+eur(t.net)+'</td></tr><tr><td>IVA ('+e(q.vat)+'%)</td><td>'+eur(t.vat)+'</td></tr><tr class="total"><td>TOTALE</td><td>'+eur(t.total)+'</td></tr></tbody></table>'+
+ '<div class="foot">Preventivo indicativo, salvo conferma. Documento predisposto per stampa o salvataggio PDF in formato A4 verticale.</div></main></body></html>';
+ win.document.open();win.document.write(printable);win.document.close();
+ const img=win.document.querySelector('.logo');
+ if(img){img.addEventListener('load',()=>setTimeout(()=>win.print(),180),{once:true});img.addEventListener('error',()=>setTimeout(()=>win.print(),180),{once:true});setTimeout(()=>{if(!img.complete)win.print()},1800)}
+ else setTimeout(()=>win.print(),300);
+}
+function renderReminders(){const box=$('reminderItems');box.replaceChildren();const jobs=db.jobs.filter(j=>j.nextService).sort((a,b)=>a.nextService.localeCompare(b.nextService));if(!jobs.length){box.textContent='Nessuna manutenzione programmata.';return}for(const j of jobs){const card=document.createElement('button');card.className='item';const due=j.nextService<=today();card.textContent=(due?'🔔 SCADUTO · ':'')+j.nextService+' · '+j.client+' · '+j.plate+(j.nextKm?' · '+j.nextKm+' km':'');card.onclick=()=>editJob(j.id);box.append(card)}}
+function renderStats(){const input=$('statsMonth');if(!input.value)input.value=today().slice(0,7);const jobs=db.jobs.filter(j=>String(j.date||'').startsWith(input.value));const total=jobs.reduce((a,j)=>a+(Number(j.total)||0),0);const paid=jobs.reduce((a,j)=>a+(j.payment==='Pagato'?(Number(j.total)||0):j.payment==='Acconto'?(Number(j.deposit)||0):0),0);$('statsItems').innerHTML='<div class="card"><p>Lavori registrati: <strong>'+jobs.length+'</strong></p><p>Valore lavori: <strong>'+eur(total)+'</strong></p><p>Incassi registrati: <strong>'+eur(paid)+'</strong></p><p>Da incassare: <strong>'+eur(Math.max(0,total-paid))+'</strong></p><p class="muted">I valori dipendono dagli stati di pagamento inseriti manualmente.</p></div>'}
+function contactClient(kind){const name=$('clientHistoryTitle').textContent.replace(/^Storico · /,'');const group=db.clients.filter(c=>normalizeSearch(c.name)===selectedHistoryClient);const car=group[0]||{};const plate=car.plate?' ('+car.plate+')':'';const msgs={ready:'la sua auto'+plate+' è pronta per il ritiro.',appointment:'le confermiamo il suo appuntamento presso OTM Garage.',quote:'il preventivo per la sua auto'+plate+' è pronto. Ci contatti per i dettagli.',service:'le ricordiamo che è il momento di programmare la manutenzione della sua auto'+plate+'.'};const msg='Buongiorno '+name+', '+msgs[v('contactTemplate')]+'\n\nOTM Garage';if(kind==='wa'){const phone=String(car.phone||'').replace(/[^\d+]/g,'').replace(/^00/,'+');if(!phone)return alert('Inserisci prima il numero di telefono nella scheda cliente.');window.open('https://wa.me/'+phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank')}else{const mail=v('contactEmail').trim();location.href='mailto:'+encodeURIComponent(mail)+'?subject='+encodeURIComponent('OTM Garage')+'&body='+encodeURIComponent(msg)}}
+</script></body></html>
